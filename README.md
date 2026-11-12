@@ -1,5 +1,13 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
 # school_driver
 
+>>>>>>> 757a5ecaebaf264624a539e757677d6ff676a165
+=======
+# school_driver
+
+>>>>>>> 757a5ecaebaf264624a539e757677d6ff676a165
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
