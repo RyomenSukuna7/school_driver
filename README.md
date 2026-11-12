@@ -1,11 +1,7 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
+
 # school_driver
 
->>>>>>> 757a5ecaebaf264624a539e757677d6ff676a165
-=======
-# school_driver
+
 
 >>>>>>> 757a5ecaebaf264624a539e757677d6ff676a165
 # Welcome to your Expo app 👋
