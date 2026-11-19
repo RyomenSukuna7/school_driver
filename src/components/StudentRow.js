@@ -1,8 +1,34 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme';
 
-export default function StudentRow({ student, onToggle }) {
+export default function StudentRow({ student, onToggle, onPickUp }) {
   const { id, name, grade, stop, dropped } = student;
+  const [pickedUp, setPickedUp] = useState(Boolean(student.pickedUp || dropped));
+  const label = dropped ? 'Dropped ✓' : pickedUp ? 'Dropped' : 'Picked up';
+
+  // Which action is waiting for the driver to confirm: 'pickup', 'drop', 'undo' or null.
+  const [pending, setPending] = useState(null);
+
+  const handlePress = () => {
+    setPending(!pickedUp ? 'pickup' : dropped ? 'undo' : 'drop');
+  };
+
+  const confirm = () => {
+    if (pending === 'pickup') {
+      setPickedUp(true);
+      onPickUp?.(id);
+    } else {
+      onToggle(id); // marks the child dropped, or undoes a drop
+    }
+    setPending(null);
+  };
+
+  const dialog = {
+    pickup: { title: 'Confirm pickup', message: `Mark ${name} as picked up? Their parents will be told.` },
+    drop: { title: 'Confirm drop', message: `Mark ${name} as dropped? Their parents will be told.` },
+    undo: { title: 'Undo drop?', message: `Mark ${name} as not dropped yet?` },
+  }[pending];
   const initials = name
     .split(' ')
     .map((part) => part[0])
@@ -30,7 +56,7 @@ export default function StudentRow({ student, onToggle }) {
       </View>
 
       <Pressable
-        onPress={() => onToggle(id)}
+        onPress={handlePress}
         style={({ pressed }) => [
           styles.btn,
           dropped && styles.btnDropped,
@@ -38,9 +64,37 @@ export default function StudentRow({ student, onToggle }) {
         ]}
       >
         <Text style={[styles.btnText, dropped && styles.btnTextDropped]}>
-          {dropped ? 'Dropped ✓' : 'Dropped'}
+          {label}
         </Text>
       </Pressable>
+
+      <Modal
+        visible={pending !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPending(null)}
+      >
+        <View style={styles.backdrop}>
+          <View style={styles.dialog}>
+            <Text style={styles.dialogTitle}>{dialog?.title}</Text>
+            <Text style={styles.dialogMessage}>{dialog?.message}</Text>
+            <View style={styles.dialogButtons}>
+              <Pressable
+                onPress={() => setPending(null)}
+                style={({ pressed }) => [styles.dialogBtn, styles.cancelBtn, pressed && { opacity: 0.8 }]}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                onPress={confirm}
+                style={({ pressed }) => [styles.dialogBtn, styles.confirmBtn, pressed && { opacity: 0.8 }]}
+              >
+                <Text style={styles.confirmText}>Confirm</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -112,5 +166,59 @@ const styles = StyleSheet.create({
   },
   btnTextDropped: {
     color: colors.teal,
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  dialog: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 22,
+  },
+  dialogTitle: {
+    color: colors.ink,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  dialogMessage: {
+    color: colors.muted,
+    fontSize: 15,
+    marginTop: 8,
+    lineHeight: 21,
+  },
+  dialogButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 22,
+  },
+  dialogBtn: {
+    flex: 1,
+    height: 46,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtn: {
+    borderWidth: 1.5,
+    borderColor: colors.line,
+  },
+  cancelText: {
+    color: colors.ink,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  confirmBtn: {
+    backgroundColor: colors.navy,
+  },
+  confirmText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
